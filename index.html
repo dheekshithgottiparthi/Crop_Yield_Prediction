@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Yield Prediction</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #34495e;
+        }
+        select, button {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: #f8f9fa;
+            transition: all 0.3s;
+        }
+        select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        #output {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 5px solid #3498db;
+        }
+        .insight-list {
+            margin-top: 15px;
+        }
+        .insight-list li {
+            margin-bottom: 10px;
+            padding-left: 10px;
+            border-left: 3px solid #3498db;
+        }
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Crop Yield Prediction</h2>
+        <div class="form-group">
+            <label for="crop">Select Crop:</label>
+            <select id="crop">
+                <option value="Rice">Rice</option>
+                <option value="Maize">Maize</option>
+                <option value="ChickPea">ChickPea</option>
+                <option value="KidneyBeans">KidneyBeans</option>
+                <option value="PigeonPeas">PigeonPeas</option>
+                <option value="MothBeans">MothBeans</option>
+                <option value="MungBean">MungBean</option>
+                <option value="Blackgram">Blackgram</option>
+                <option value="Lentil">Lentil</option>
+                <option value="Pomegranate">Pomegranate</option>
+                <option value="Banana">Banana</option>
+                <option value="Mango">Mango</option>
+                <option value="Grapes">Grapes</option>
+                <option value="Watermelon">Watermelon</option>
+                <option value="Muskmelon">Muskmelon</option>
+                <option value="Apple">Apple</option>
+                <option value="Orange">Orange</option>
+                <option value="Papaya">Papaya</option>
+                <option value="Coconut">Coconut</option>
+                <option value="Cotton">Cotton</option>
+                <option value="Jute">Jute</option>
+                <option value="Coffee">Coffee</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="region">Select Region:</label>
+            <select id="region">
+                <option value="North India">North India</option>
+                <option value="South India">South India</option>
+                <option value="East India">East India</option>
+                <option value="West India">West India</option>
+                <option value="Central India">Central India</option>
+                <option value="Northeast India">Northeast India</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="season">Select Season:</label>
+            <select id="season">
+                <option value="Kharif">Kharif (Jun-Oct)</option>
+                <option value="Rabi">Rabi (Oct-Mar)</option>
+                <option value="Zaid">Zaid (Mar-Jun)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="soil">Select Soil Type:</label>
+            <select id="soil">
+                <option value="Loamy">Loamy</option>
+                <option value="Clay">Clay</option>
+                <option value="Sandy">Sandy</option>
+                <option value="Silt">Silt</option>
+                <option value="Peaty">Peaty</option>
+                <option value="Chalky">Chalky</option>
+                <option value="Black">Black</option>
+                <option value="Red">Red</option>
+            </select>
+        </div>
+        <button onclick="predictYield()">Predict Yield</button>
+        <div id="output"></div>
+    </div>
+
+    <script>
+        async function predictYield() {
+            let crop = document.getElementById("crop").value;
+            let region = document.getElementById("region").value;
+            let season = document.getElementById("season").value;
+            let soil = document.getElementById("soil").value;
+            
+            // Show loading state
+            document.getElementById("output").innerHTML = "<p>Processing your request...</p>";
+            
+            try {
+                let response = await fetch("http://127.0.0.1:5000/predict", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ crop, region, season, soil })
+                });
+                
+                let result = await response.json();
+                
+                document.getElementById("output").innerHTML =
+                    result.error ? `<p class='error'>${result.error}</p>` :
+                    `<h3>Predicted Yield: ${result.prediction} kg/ha</h3>
+                     <h4>Recommendations:</h4>
+                     <ul class="insight-list">` +
+                    result.insights.map(insight => `<li>${insight}</li>`).join('') +
+                    "</ul>";
+            } catch (error) {
+                document.getElementById("output").innerHTML = 
+                    `<p class='error'>Failed to connect to the server. Please try again later.</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
